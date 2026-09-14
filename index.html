@@ -3,23 +3,23 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="theme-color" content="#6C5DD3">
+<meta name="theme-color" content="#0f0f1a">
 <meta name="description" content="Личное расписание занятий Timelya">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" type="image/jpeg" href="favicon.jpeg">
 <title>Timelya — Расписание</title>
 <style>
   :root {
-    --bg: #f2f2f7;
-    --surface: #ffffff;
-    --text: #1b1b2f;
-    --muted: #6b6b7b;
-    --primary: #6C5DD3;
-    --practice: #0ea5e9;
-    --lecture: #8b5cf6;
-    --lab: #10b981;
+    --bg: #0f0f1a;
+    --surface: #1c1c2e;
+    --text: #f2f2f7;
+    --muted: #9c9cb5;
+    --primary: #7c6bf2;
+    --practice: #38bdf8;
+    --lecture: #a78bfa;
+    --lab: #34d399;
     --radius: 20px;
-    --shadow: 0 1px 3px rgba(0,0,0,0.08);
+    --shadow: 0 2px 8px rgba(0,0,0,0.3);
     --safe-bottom: env(safe-area-inset-bottom, 16px);
   }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -37,7 +37,7 @@
     display: flex;
     align-items: center;
     gap: 14px;
-    border-bottom: 1px solid #e5e5ea;
+    border-bottom: 1px solid #2a2a40;
     position: sticky;
     top: 0;
     z-index: 10;
@@ -47,8 +47,8 @@
     height: 44px;
     border-radius: 12px;
     object-fit: cover;
-    background: #fff;
-    box-shadow: 0 2px 8px rgba(0,0,0,.08);
+    background: transparent;
+    box-shadow: 0 2px 8px rgba(0,0,0,.25);
   }
   .brand h1 {
     margin: 0;
@@ -76,7 +76,7 @@
     font-size: .75rem;
     font-weight: 700;
     color: var(--primary);
-    background: rgba(91,78,204,.1);
+    background: rgba(124,107,242,.15);
     padding: 5px 10px;
     border-radius: 999px;
     display: none;
@@ -88,7 +88,7 @@
     padding: 16px 18px;
     margin-bottom: 14px;
     box-shadow: var(--shadow);
-    border-left: 4px solid #e5e5ea;
+    border-left: 4px solid #2a2a40;
     transition: transform .1s;
   }
   .class-card:active { transform: scale(.99); }
@@ -142,9 +142,9 @@
     justify-content: space-around;
     gap: 6px;
     padding: 10px 12px calc(12px + var(--safe-bottom));
-    background: rgba(255,255,255,.96);
+    background: rgba(28,28,46,.96);
     backdrop-filter: blur(10px);
-    border-top: 1px solid rgba(0,0,0,.08);
+    border-top: 1px solid rgba(255,255,255,.08);
     z-index: 20;
   }
   .tab {
@@ -162,7 +162,7 @@
   .tab.active {
     background: var(--primary);
     color: #fff;
-    box-shadow: 0 4px 14px rgba(91,78,204,.25);
+    box-shadow: 0 4px 14px rgba(124,107,242,.25);
   }
   .install-banner {
     display: none;
@@ -170,14 +170,15 @@
     bottom: calc(80px + var(--safe-bottom));
     left: 16px;
     right: 16px;
-    background: #fff;
+    background: var(--surface);
     border-radius: 18px;
     padding: 14px 18px;
-    box-shadow: 0 6px 30px rgba(0,0,0,.15);
+    box-shadow: 0 6px 30px rgba(0,0,0,.4);
     align-items: center;
     justify-content: space-between;
     gap: 12px;
     z-index: 30;
+    color: var(--text);
   }
   .install-banner.show { display: flex; }
   .install-banner span { font-size: .95rem; }
