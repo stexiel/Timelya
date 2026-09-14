@@ -3,8 +3,8 @@ const filesToCache = [
   './',
   './index.html',
   './manifest.json',
-  './logo.svg',
-  './favicon.svg'
+  './logo.jpeg',
+  './favicon.jpeg'
 ];
 
 self.addEventListener('install', (e) => {
