@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#6C5DD3">
+<meta name="description" content="Личное расписание занятий Timelya">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<title>Timelya — Расписание</title>
+<style>
+  :root {
+    --bg: #f2f2f7;
+    --surface: #ffffff;
+    --text: #1b1b2f;
+    --muted: #6b6b7b;
+    --primary: #6C5DD3;
+    --practice: #0ea5e9;
+    --lecture: #8b5cf6;
+    --lab: #10b981;
+    --radius: 20px;
+    --shadow: 0 1px 3px rgba(0,0,0,0.08);
+    --safe-bottom: env(safe-area-inset-bottom, 16px);
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.4;
+    padding-bottom: calc(84px + var(--safe-bottom));
+  }
+  header {
+    background: var(--surface);
+    padding: 18px 20px 14px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    border-bottom: 1px solid #e5e5ea;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  .logo {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    object-fit: cover;
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,.08);
+  }
+  .brand h1 {
+    margin: 0;
+    font-size: 1.3rem;
+    font-weight: 800;
+    letter-spacing: -0.4px;
+  }
+  .brand p {
+    margin: 2px 0 0;
+    color: var(--muted);
+    font-size: .8rem;
+  }
+  main { padding: 18px 16px 0; max-width: 640px; margin: 0 auto; }
+  .day-panel { display: none; }
+  .day-panel.active { display: block; animation: fade .2s ease; }
+  @keyframes fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+  .day-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 18px;
+  }
+  .day-title { font-size: 1.4rem; font-weight: 800; margin: 0; }
+  .today-chip {
+    font-size: .75rem;
+    font-weight: 700;
+    color: var(--primary);
+    background: rgba(91,78,204,.1);
+    padding: 5px 10px;
+    border-radius: 999px;
+    display: none;
+  }
+  .day-panel.is-today .today-chip { display: block; }
+  .class-card {
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: 16px 18px;
+    margin-bottom: 14px;
+    box-shadow: var(--shadow);
+    border-left: 4px solid #e5e5ea;
+    transition: transform .1s;
+  }
+  .class-card:active { transform: scale(.99); }
+  .class-card.lecture { border-left-color: var(--lecture); }
+  .class-card.practice { border-left-color: var(--practice); }
+  .class-card.lab { border-left-color: var(--lab); }
+  .top-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 4px;
+  }
+  .time {
+    font-weight: 800;
+    font-size: .95rem;
+    color: var(--text);
+    letter-spacing: -0.2px;
+  }
+  .room {
+    color: var(--muted);
+    font-size: .85rem;
+    font-weight: 600;
+    text-align: right;
+  }
+  .subject {
+    font-weight: 700;
+    font-size: 1.1rem;
+    margin: 0 0 10px;
+    word-wrap: break-word;
+  }
+  .badges { display: flex; gap: 8px; flex-wrap: wrap; }
+  .badge {
+    font-size: .7rem;
+    font-weight: 700;
+    padding: 5px 10px;
+    border-radius: 8px;
+    text-transform: uppercase;
+    letter-spacing: .4px;
+    color: #fff;
+  }
+  .badge.lecture { background: var(--lecture); }
+  .badge.practice { background: var(--practice); }
+  .badge.lab { background: var(--lab); }
+  .bottom-tabs {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    justify-content: space-around;
+    gap: 6px;
+    padding: 10px 12px calc(12px + var(--safe-bottom));
+    background: rgba(255,255,255,.96);
+    backdrop-filter: blur(10px);
+    border-top: 1px solid rgba(0,0,0,.08);
+    z-index: 20;
+  }
+  .tab {
+    flex: 1 1 0;
+    border: 0;
+    border-radius: 16px;
+    padding: 10px 4px;
+    background: transparent;
+    color: var(--muted);
+    font-weight: 700;
+    font-size: .95rem;
+    cursor: pointer;
+    transition: .15s;
+  }
+  .tab.active {
+    background: var(--primary);
+    color: #fff;
+    box-shadow: 0 4px 14px rgba(91,78,204,.25);
+  }
+  .install-banner {
+    display: none;
+    position: fixed;
+    bottom: calc(80px + var(--safe-bottom));
+    left: 16px;
+    right: 16px;
+    background: #fff;
+    border-radius: 18px;
+    padding: 14px 18px;
+    box-shadow: 0 6px 30px rgba(0,0,0,.15);
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    z-index: 30;
+  }
+  .install-banner.show { display: flex; }
+  .install-banner span { font-size: .95rem; }
+  .install-btn {
+    border: 0;
+    border-radius: 12px;
+    background: var(--primary);
+    color: #fff;
+    padding: 10px 16px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  @media (min-width: 640px) {
+    .bottom-tabs { border-radius: 0; }
+    .class-card { padding: 18px 20px; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <img class="logo" src="logo.svg" alt="Timelya — логотип">
+  <div class="brand">
+    <h1>Timelya</h1>
+    <p>Расписание</p>
+  </div>
+</header>
+<main>
+  <section class="day-panel" data-panel="1">
+    <div class="day-header">
+      <h2 class="day-title">Понедельник</h2>
+      <span class="today-chip">Сегодня</span>
+    </div>
+    <div class="class-card practice"><div class="top-row"><span class="time">08:30 — 09:20</span><span class="room">418-Б</span></div><p class="subject">Культурология</p><div class="badges"><span class="badge practice">практика</span></div></div>
+    <div class="class-card practice"><div class="top-row"><span class="time">09:35 — 10:25</span><span class="room">301-Б</span></div><p class="subject">Основы искусственного интеллекта</p><div class="badges"><span class="badge practice">практика</span></div></div>
+    <div class="class-card practice"><div class="top-row"><span class="time">10:40 — 11:30</span><span class="room">401-Б</span></div><p class="subject">Философия</p><div class="badges"><span class="badge practice">практика</span></div></div>
+    <div class="class-card practice"><div class="top-row"><span class="time">12:00 — 12:50</span><span class="room">418-Б</span></div><p class="subject">Психология</p><div class="badges"><span class="badge practice">практика</span></div></div>
+    <div class="class-card lecture"><div class="top-row"><span class="time">13:05 — 13:55</span><span class="room">308-Б</span></div><p class="subject">Политология</p><div class="badges"><span class="badge lecture">лекция</span></div></div>
+    <div class="class-card lecture"><div class="top-row"><span class="time">14:10 — 15:00</span><span class="room">506-С</span></div><p class="subject">Технология программирования на английском</p><div class="badges"><span class="badge lecture">лекция</span></div></div>
+    <div class="class-card practice"><div class="top-row"><span class="time">16:20 — 17:10</span><span class="room">418-Б</span></div><p class="subject">Политология</p><div class="badges"><span class="badge practice">практика</span></div></div>
+  </section>
+  <section class="day-panel" data-panel="2">
+    <div class="day-header">
+      <h2 class="day-title">Вторник</h2>
+      <span class="today-chip">Сегодня</span>
+    </div>
+    <div class="class-card practice"><div class="top-row"><span class="time">08:30 — 09:20</span><span class="room">спортзал Б корпуса</span></div><p class="subject">Физическая культура</p><div class="badges"><span class="badge practice">практика</span></div></div>
+    <div class="class-card lab"><div class="top-row"><span class="time">12:00 — 13:55</span><span class="room">508-С</span></div><p class="subject">Архитектура и организация компьютерных систем</p><div class="badges"><span class="badge lab">лабораторная</span></div></div>
+  </section>
+  <section class="day-panel" data-panel="3">
+    <div class="day-header">
+      <h2 class="day-title">Среда</h2>
+      <span class="today-chip">Сегодня</span>
+    </div>
+    <div class="class-card lecture"><div class="top-row"><span class="time">12:00 — 12:50</span><span class="room">416-Б</span></div><p class="subject">Социология</p><div class="badges"><span class="badge lecture">лекция</span></div></div>
+    <div class="class-card practice"><div class="top-row"><span class="time">13:05 — 13:55</span><span class="room">403-Б</span></div><p class="subject">Социология</p><div class="badges"><span class="badge practice">практика</span></div></div>
+    <div class="class-card lecture"><div class="top-row"><span class="time">16:20 — 17:10</span><span class="room">322-Б</span></div><p class="subject">Архитектура и организация компьютерных систем</p><div class="badges"><span class="badge lecture">лекция</span></div></div>
+  </section>
+  <section class="day-panel" data-panel="4">
+    <div class="day-header">
+      <h2 class="day-title">Четверг</h2>
+      <span class="today-chip">Сегодня</span>
+    </div>
+    <div class="class-card lecture"><div class="top-row"><span class="time">08:30 — 09:20</span><span class="room">322-Б</span></div><p class="subject">Культурология</p><div class="badges"><span class="badge lecture">лекция</span></div></div>
+    <div class="class-card lecture"><div class="top-row"><span class="time">09:35 — 10:25</span><span class="room">606-С</span></div><p class="subject">Основы искусственного интеллекта</p><div class="badges"><span class="badge lecture">лекция</span></div></div>
+    <div class="class-card lecture"><div class="top-row"><span class="time">10:40 — 11:30</span><span class="room">406-Б</span></div><p class="subject">Психология</p><div class="badges"><span class="badge lecture">лекция</span></div></div>
+    <div class="class-card lab"><div class="top-row"><span class="time">12:00 — 13:55</span><span class="room">501-С</span></div><p class="subject">Технология программирования на английском</p><div class="badges"><span class="badge lab">лабораторная</span></div></div>
+  </section>
+  <section class="day-panel" data-panel="5">
+    <div class="day-header">
+      <h2 class="day-title">Пятница</h2>
+      <span class="today-chip">Сегодня</span>
+    </div>
+    <div class="class-card lecture"><div class="top-row"><span class="time">12:00 — 12:50</span><span class="room">308-Б</span></div><p class="subject">Логические основы программирования</p><div class="badges"><span class="badge lecture">лекция</span></div></div>
+    <div class="class-card lecture"><div class="top-row"><span class="time">13:05 — 13:55</span><span class="room">506-Б</span></div><p class="subject">Философия</p><div class="badges"><span class="badge lecture">лекция</span></div></div>
+    <div class="class-card lab"><div class="top-row"><span class="time">15:15 — 17:10</span><span class="room">507-С</span></div><p class="subject">Логические основы программирования</p><div class="badges"><span class="badge lab">лабораторная</span></div></div>
+  </section>
+</main>
+<nav class="bottom-tabs" id="tabs" aria-label="Дни недели">
+  <button class="tab" data-day="1" aria-selected="false">Пн</button>
+  <button class="tab" data-day="2" aria-selected="false">Вт</button>
+  <button class="tab" data-day="3" aria-selected="false">Ср</button>
+  <button class="tab" data-day="4" aria-selected="false">Чт</button>
+  <button class="tab" data-day="5" aria-selected="false">Пт</button>
+</nav>
+<div class="install-banner" id="installBanner">
+  <span>Добавить Timelya на главный экран?</span>
+  <button class="install-btn" id="installBtn">Установить</button>
+</div>
+<script>
+  const tabs = document.querySelectorAll('.tab');
+  const panels = document.querySelectorAll('.day-panel');
+  function showDay(day) {
+    const dayNum = Number(day);
+    tabs.forEach(t => {
+      const isActive = Number(t.dataset.day) === dayNum;
+      t.classList.toggle('active', isActive);
+      t.setAttribute('aria-selected', isActive);
+    });
+    panels.forEach(p => {
+      const isActive = Number(p.dataset.panel) === dayNum;
+      p.classList.toggle('active', isActive);
+      p.classList.toggle('is-today', isActive && dayNum === (new Date().getDay() || 7));
+    });
+  }
+  const today = new Date().getDay() || 7;
+  showDay(today <= 5 ? today : 1);
+  tabs.forEach(t => t.addEventListener('click', () => showDay(t.dataset.day)));
+
+  let deferredPrompt;
+  const banner = document.getElementById('installBanner');
+  const btn = document.getElementById('installBtn');
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    banner.classList.add('show');
+  });
+  btn.addEventListener('click', async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    await deferredPrompt.userChoice;
+    banner.classList.remove('show');
+    deferredPrompt = null;
+  });
+
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js').catch(console.error);
+  }
+</script>
+</body>
+</html>
