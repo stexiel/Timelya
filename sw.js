@@ -1,4 +1,4 @@
-const cacheName = 'timelya-v2';
+const cacheName = 'timelya-v3';
 const filesToCache = [
   './',
   './index.html',
