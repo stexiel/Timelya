@@ -64,6 +64,7 @@
     color: var(--muted);
     font-size: .8rem;
   }
+<<<<<<< HEAD
   .header-btn {
     margin-left: auto;
     background: var(--primary);
@@ -78,10 +79,13 @@
   }
   .header-btn:hover { background: #6b5ce0; }
   .header-btn.active { background: var(--surface); color: var(--text); border: 1px solid #2a2a40; }
+=======
+>>>>>>> 936966c984c204e2cc1848a1669ffcdfe24c7814
   main { padding: 18px 16px 0; max-width: 640px; margin: 0 auto; }
   .day-panel { display: none; }
   .day-panel.active { display: block; animation: fade .2s ease; }
   @keyframes fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+<<<<<<< HEAD
   .students-panel { display: none; }
   .students-panel.active { display: block; animation: fade .2s ease; }
   .group-section {
@@ -162,6 +166,8 @@
   .student-card.hidden {
     display: none;
   }
+=======
+>>>>>>> 936966c984c204e2cc1848a1669ffcdfe24c7814
   .day-header {
     display: flex;
     align-items: center;
@@ -292,7 +298,10 @@
   @media (min-width: 640px) {
     .bottom-tabs { border-radius: 0; }
     .class-card { padding: 18px 20px; }
+<<<<<<< HEAD
     .student-card { padding: 16px 18px; }
+=======
+>>>>>>> 936966c984c204e2cc1848a1669ffcdfe24c7814
   }
 </style>
 </head>
@@ -303,7 +312,10 @@
     <h1>Timelya</h1>
     <p>Расписание</p>
   </div>
+<<<<<<< HEAD
   <button class="header-btn" data-tab="students">Список</button>
+=======
+>>>>>>> 936966c984c204e2cc1848a1669ffcdfe24c7814
 </header>
 <main>
   <section class="day-panel" data-panel="1">
@@ -361,6 +373,7 @@
     <div class="class-card window"><div class="top-row"><span class="time">13:55 — 15:15</span></div><p class="subject">Окошко</p></div>
     <div class="class-card lab"><div class="top-row"><span class="time">15:15 — 17:10</span><span class="room">507-С</span></div><p class="subject">Логические основы программирования</p><div class="badges"><span class="badge lab">лабораторная</span></div></div>
   </section>
+<<<<<<< HEAD
   <section class="students-panel" data-panel="students">
     <div class="day-header">
       <h2 class="day-title">Список</h2>
@@ -423,6 +436,10 @@
   </section>
 </main>
 <nav class="bottom-tabs" id="tabs" aria-label="Навигация">
+=======
+</main>
+<nav class="bottom-tabs" id="tabs" aria-label="Дни недели">
+>>>>>>> 936966c984c204e2cc1848a1669ffcdfe24c7814
   <button class="tab" data-day="1" aria-selected="false">Пн</button>
   <button class="tab" data-day="2" aria-selected="false">Вт</button>
   <button class="tab" data-day="3" aria-selected="false">Ср</button>
@@ -435,6 +452,7 @@
 </div>
 <script>
   const tabs = document.querySelectorAll('.tab');
+<<<<<<< HEAD
   const headerBtn = document.querySelector('.header-btn');
   const panels = document.querySelectorAll('.day-panel, .students-panel');
   function showPanel(panelId) {
@@ -479,6 +497,25 @@
       section.style.display = visibleCards.length > 0 ? 'block' : 'none';
     });
   });
+=======
+  const panels = document.querySelectorAll('.day-panel');
+  function showDay(day) {
+    const dayNum = Number(day);
+    tabs.forEach(t => {
+      const isActive = Number(t.dataset.day) === dayNum;
+      t.classList.toggle('active', isActive);
+      t.setAttribute('aria-selected', isActive);
+    });
+    panels.forEach(p => {
+      const isActive = Number(p.dataset.panel) === dayNum;
+      p.classList.toggle('active', isActive);
+      p.classList.toggle('is-today', isActive && dayNum === (new Date().getDay() || 7));
+    });
+  }
+  const today = new Date().getDay() || 7;
+  showDay(today <= 5 ? today : 1);
+  tabs.forEach(t => t.addEventListener('click', () => showDay(t.dataset.day)));
+>>>>>>> 936966c984c204e2cc1848a1669ffcdfe24c7814
 
   let deferredPrompt;
   const banner = document.getElementById('installBanner');
@@ -497,6 +534,7 @@
   });
 
   if ('serviceWorker' in navigator) {
+<<<<<<< HEAD
     navigator.serviceWorker.register('sw.js').then((registration) => {
       registration.addEventListener('updatefound', () => {
         const newWorker = registration.installing;
@@ -514,6 +552,9 @@
     navigator.serviceWorker.addEventListener('controllerchange', () => {
       window.location.reload();
     });
+=======
+    navigator.serviceWorker.register('sw.js').catch(console.error);
+>>>>>>> 936966c984c204e2cc1848a1669ffcdfe24c7814
   }
 </script>
 </body>
