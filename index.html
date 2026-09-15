@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0f0f1a">
+<meta name="description" content="Личное расписание занятий Timelya">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/jpeg" href="favicon.jpeg">
+<title>Timelya — Расписание</title>
+<style>
+  :root {
+    --bg: #0f0f1a;
+    --surface: #1c1c2e;
+    --text: #f2f2f7;
+    --muted: #9c9cb5;
+    --primary: #7c6bf2;
+    --practice: #38bdf8;
+    --lecture: #a78bfa;
+    --lab: #34d399;
+    --radius: 20px;
+    --shadow: 0 2px 8px rgba(0,0,0,0.3);
+    --safe-bottom: env(safe-area-inset-bottom, 16px);
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.4;
+    padding-bottom: calc(84px + var(--safe-bottom));
+  }
+  header {
+    background: var(--surface);
+    padding: 18px 20px 14px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    border-bottom: 1px solid #2a2a40;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  .logo {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    object-fit: cover;
+    background: transparent;
+    box-shadow: 0 2px 8px rgba(0,0,0,.25);
+  }
+  .brand h1 {
+    margin: 0;
+    font-size: 1.3rem;
+    font-weight: 800;
+    letter-spacing: -0.4px;
+  }
+  .brand p {
+    margin: 2px 0 0;
+    color: var(--muted);
+    font-size: .8rem;
+  }
+  .header-btn {
+    margin-left: auto;
+    background: var(--primary);
+    border: none;
+    color: #fff;
+    padding: 8px 16px;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: .9rem;
+    cursor: pointer;
+    transition: .15s;
+  }
+  .header-btn:hover { background: #6b5ce0; }
+  .header-btn.active { background: var(--surface); color: var(--text); border: 1px solid #2a2a40; }
+  main { padding: 18px 16px 0; max-width: 640px; margin: 0 auto; }
+  .day-panel { display: none; }
+  .day-panel.active { display: block; animation: fade .2s ease; }
+  @keyframes fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+  .students-panel { display: none; }
+  .students-panel.active { display: block; animation: fade .2s ease; }
+  .group-section {
+    margin-bottom: 28px;
+  }
+  .group-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .group-badge {
+    background: linear-gradient(135deg, var(--primary), var(--practice));
+    color: #fff;
+    padding: 8px 14px;
+    border-radius: 12px;
+    font-weight: 700;
+    font-size: .85rem;
+    box-shadow: 0 4px 12px rgba(124,107,242,.3);
+  }
+  .group-title {
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin: 0;
+  }
+  .student-count {
+    color: var(--muted);
+    font-size: .8rem;
+    margin-left: auto;
+  }
+  .students-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  .student-card {
+    background: var(--surface);
+    border-radius: 14px;
+    padding: 12px 14px;
+    box-shadow: var(--shadow);
+    transition: transform .1s, box-shadow .1s;
+    border: 1px solid #2a2a40;
+  }
+  .student-card:active { transform: scale(.98); }
+  .student-name {
+    font-weight: 600;
+    font-size: .95rem;
+    margin: 0;
+    word-wrap: break-word;
+  }
+  .student-index {
+    color: var(--muted);
+    font-size: .75rem;
+    margin-top: 4px;
+  }
+  .search-container {
+    margin-bottom: 20px;
+  }
+  .search-input {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid #2a2a40;
+    border-radius: 14px;
+    padding: 14px 18px;
+    color: var(--text);
+    font-size: 1rem;
+    font-weight: 500;
+    outline: none;
+    transition: .15s;
+  }
+  .search-input:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(124,107,242,.2);
+  }
+  .search-input::placeholder {
+    color: var(--muted);
+  }
+  .student-card.hidden {
+    display: none;
+  }
+  .day-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 18px;
+  }
+  .day-title { font-size: 1.4rem; font-weight: 800; margin: 0; }
+  .today-chip {
+    font-size: .75rem;
+    font-weight: 700;
+    color: var(--primary);
+    background: rgba(124,107,242,.15);
+    padding: 5px 10px;
+    border-radius: 999px;
+    display: none;
+  }
+  .day-panel.is-today .today-chip { display: block; }
+  .class-card {
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: 16px 18px;
+    margin-bottom: 14px;
+    box-shadow: var(--shadow);
+    border-left: 4px solid #2a2a40;
+    transition: transform .1s;
+  }
+  .class-card:active { transform: scale(.99); }
+  .class-card.lecture { border-left-color: var(--lecture); }
+  .class-card.practice { border-left-color: var(--practice); }
+  .class-card.lab { border-left-color: var(--lab); }
+  .top-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 12px;
+    margin-bottom: 4px;
+  }
+  .time {
+    font-weight: 800;
+    font-size: .95rem;
+    color: var(--text);
+    letter-spacing: -0.2px;
+  }
+  .room {
+    color: var(--text);
+    font-size: .9rem;
+    font-weight: 700;
+    text-align: right;
+    white-space: nowrap;
+  }
+  .subject {
+    font-weight: 700;
+    font-size: 1.1rem;
+    margin: 0 0 10px;
+    word-wrap: break-word;
+  }
+  .badges { display: flex; gap: 8px; flex-wrap: wrap; }
+  .badge {
+    font-size: .7rem;
+    font-weight: 700;
+    padding: 5px 10px;
+    border-radius: 8px;
+    text-transform: uppercase;
+    letter-spacing: .4px;
+    color: #fff;
+  }
+  .badge.lecture { background: var(--lecture); }
+  .badge.practice { background: var(--practice); }
+  .badge.lab { background: var(--lab); }
+  .bottom-tabs {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    justify-content: space-around;
+    gap: 6px;
+    padding: 10px 12px calc(12px + var(--safe-bottom));
+    background: rgba(28,28,46,.96);
+    backdrop-filter: blur(10px);
+    border-top: 1px solid rgba(255,255,255,.08);
+    z-index: 20;
+  }
+  .tab {
+    flex: 1 1 0;
+    border: 0;
+    border-radius: 16px;
+    padding: 10px 4px;
+    background: transparent;
+    color: var(--muted);
+    font-weight: 700;
+    font-size: .95rem;
+    cursor: pointer;
+    transition: .15s;
+  }
+  .tab.active {
+    background: var(--primary);
+    color: #fff;
+    box-shadow: 0 4px 14px rgba(124,107,242,.25);
+  }
+  .install-banner {
+    display: none;
+    position: fixed;
+    bottom: calc(80px + var(--safe-bottom));
+    left: 16px;
+    right: 16px;
+    background: var(--surface);
+    border-radius: 18px;
+    padding: 14px 18px;
+    box-shadow: 0 6px 30px rgba(0,0,0,.4);
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    z-index: 30;
+    color: var(--text);
+  }
+  .install-banner.show { display: flex; }
+  .install-banner span { font-size: .95rem; }
+  .install-btn {
+    border: 0;
+    border-radius: 12px;
+    background: var(--primary);
+    color: #fff;
+    padding: 10px 16px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  @media (min-width: 640px) {
+    .bottom-tabs { border-radius: 0; }
+    .class-card { padding: 18px 20px; }
+    .student-card { padding: 16px 18px; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <img class="logo" src="logo.jpeg" alt="Timelya — логотип">
+  <div class="brand">
+    <h1>Timelya</h1>
+    <p>Расписание</p>
+  </div>
+  <button class="header-btn" data-tab="students">Список</button>
+</header>
+<main>
+  <section class="day-panel" data-panel="1">
+    <div class="day-header">
+      <h2 class="day-title">Понедельник</h2>
+      <span class="today-chip">Сегодня</span>
+    </div>
+    <div class="class-card practice"><div class="top-row"><span class="time">08:30 — 09:20</span><span class="room">418-Б</span></div><p class="subject">Культурология</p><div class="badges"><span class="badge practice">практика</span></div></div>
+    <div class="class-card practice"><div class="top-row"><span class="time">09:35 — 10:25</span><span class="room">301-Б</span></div><p class="subject">Основы искусственного интеллекта</p><div class="badges"><span class="badge practice">практика</span></div></div>
+    <div class="class-card practice"><div class="top-row"><span class="time">10:40 — 11:30</span><span class="room">401-Б</span></div><p class="subject">Философия</p><div class="badges"><span class="badge practice">практика</span></div></div>
+    <div class="class-card window"><div class="top-row"><span class="time">11:30 — 12:00</span></div><p class="subject">Окошко</p></div>
+    <div class="class-card practice"><div class="top-row"><span class="time">12:00 — 12:50</span><span class="room">418-Б</span></div><p class="subject">Психология</p><div class="badges"><span class="badge practice">практика</span></div></div>
+    <div class="class-card lecture"><div class="top-row"><span class="time">13:05 — 13:55</span><span class="room">308-Б</span></div><p class="subject">Политология</p><div class="badges"><span class="badge lecture">лекция</span></div></div>
+    <div class="class-card lecture"><div class="top-row"><span class="time">14:10 — 15:00</span><span class="room">506-С</span></div><p class="subject">Технология программирования на английском</p><div class="badges"><span class="badge lecture">лекция</span></div></div>
+    <div class="class-card window"><div class="top-row"><span class="time">15:00 — 16:20</span></div><p class="subject">Окошко</p></div>
+    <div class="class-card practice"><div class="top-row"><span class="time">16:20 — 17:10</span><span class="room">418-Б</span></div><p class="subject">Политология</p><div class="badges"><span class="badge practice">практика</span></div></div>
+  </section>
+  <section class="day-panel" data-panel="2">
+    <div class="day-header">
+      <h2 class="day-title">Вторник</h2>
+      <span class="today-chip">Сегодня</span>
+    </div>
+    <div class="class-card practice"><div class="top-row"><span class="time">08:30 — 09:20</span><span class="room">спортзал Б корпуса</span></div><p class="subject">Физическая культура</p><div class="badges"><span class="badge practice">практика</span></div></div>
+    <div class="class-card window"><div class="top-row"><span class="time">09:20 — 12:00</span></div><p class="subject">Окошко</p></div>
+    <div class="class-card lab"><div class="top-row"><span class="time">12:00 — 13:55</span><span class="room">508-С</span></div><p class="subject">Архитектура и организация компьютерных систем</p><div class="badges"><span class="badge lab">лабораторная</span></div></div>
+  </section>
+  <section class="day-panel" data-panel="3">
+    <div class="day-header">
+      <h2 class="day-title">Среда</h2>
+      <span class="today-chip">Сегодня</span>
+    </div>
+    <div class="class-card lecture"><div class="top-row"><span class="time">12:00 — 12:50</span><span class="room">416-Б</span></div><p class="subject">Социология</p><div class="badges"><span class="badge lecture">лекция</span></div></div>
+    <div class="class-card practice"><div class="top-row"><span class="time">13:05 — 13:55</span><span class="room">403-Б</span></div><p class="subject">Социология</p><div class="badges"><span class="badge practice">практика</span></div></div>
+    <div class="class-card window"><div class="top-row"><span class="time">13:55 — 16:20</span></div><p class="subject">Окошко</p></div>
+    <div class="class-card lecture"><div class="top-row"><span class="time">16:20 — 17:10</span><span class="room">322-Б</span></div><p class="subject">Архитектура и организация компьютерных систем</p><div class="badges"><span class="badge lecture">лекция</span></div></div>
+  </section>
+  <section class="day-panel" data-panel="4">
+    <div class="day-header">
+      <h2 class="day-title">Четверг</h2>
+      <span class="today-chip">Сегодня</span>
+    </div>
+    <div class="class-card lecture"><div class="top-row"><span class="time">08:30 — 09:20</span><span class="room">322-Б</span></div><p class="subject">Культурология</p><div class="badges"><span class="badge lecture">лекция</span></div></div>
+    <div class="class-card lecture"><div class="top-row"><span class="time">09:35 — 10:25</span><span class="room">606-С</span></div><p class="subject">Основы искусственного интеллекта</p><div class="badges"><span class="badge lecture">лекция</span></div></div>
+    <div class="class-card lecture"><div class="top-row"><span class="time">10:40 — 11:30</span><span class="room">406-Б</span></div><p class="subject">Психология</p><div class="badges"><span class="badge lecture">лекция</span></div></div>
+    <div class="class-card window"><div class="top-row"><span class="time">11:30 — 12:00</span></div><p class="subject">Окошко</p></div>
+    <div class="class-card lab"><div class="top-row"><span class="time">12:00 — 13:55</span><span class="room">501-С</span></div><p class="subject">Технология программирования на английском</p><div class="badges"><span class="badge lab">лабораторная</span></div></div>
+  </section>
+  <section class="day-panel" data-panel="5">
+    <div class="day-header">
+      <h2 class="day-title">Пятница</h2>
+      <span class="today-chip">Сегодня</span>
+    </div>
+    <div class="class-card lecture"><div class="top-row"><span class="time">12:00 — 12:50</span><span class="room">308-Б</span></div><p class="subject">Логические основы программирования</p><div class="badges"><span class="badge lecture">лекция</span></div></div>
+    <div class="class-card lecture"><div class="top-row"><span class="time">13:05 — 13:55</span><span class="room">506-Б</span></div><p class="subject">Философия</p><div class="badges"><span class="badge lecture">лекция</span></div></div>
+    <div class="class-card window"><div class="top-row"><span class="time">13:55 — 15:15</span></div><p class="subject">Окошко</p></div>
+    <div class="class-card lab"><div class="top-row"><span class="time">15:15 — 17:10</span><span class="room">507-С</span></div><p class="subject">Логические основы программирования</p><div class="badges"><span class="badge lab">лабораторная</span></div></div>
+  </section>
+  <section class="students-panel" data-panel="students">
+    <div class="day-header">
+      <h2 class="day-title">Список</h2>
+    </div>
+    <div class="search-container">
+      <input type="text" class="search-input" placeholder="Поиск по имени или фамилии..." id="searchInput">
+    </div>
+    <div class="group-section">
+      <div class="group-header">
+        <span class="group-badge" style="background: linear-gradient(135deg, var(--practice), var(--lab));">ТиПо 26-11</span>
+        <h3 class="group-title">Группа 26-11</h3>
+        <span class="student-count">9 студентов</span>
+      </div>
+      <div class="students-grid">
+        <div class="student-card"><p class="student-name">Әбікен Әсер</p><p class="student-index">№1</p></div>
+        <div class="student-card"><p class="student-name">Даниярұлы Нұрсұлтан</p><p class="student-index">№2</p></div>
+        <div class="student-card"><p class="student-name">Игилик Сәкен</p><p class="student-index">№3</p></div>
+        <div class="student-card"><p class="student-name">Кайпжан Әлхам-Әли</p><p class="student-index">№4</p></div>
+        <div class="student-card"><p class="student-name">Құрманұлы Мадияр</p><p class="student-index">№5</p></div>
+        <div class="student-card"><p class="student-name">Нұрмұхамбет Мирас</p><p class="student-index">№6</p></div>
+        <div class="student-card"><p class="student-name">Силықан Эмир</p><p class="student-index">№7</p></div>
+        <div class="student-card"><p class="student-name">Талғатбайұлы Бекжан</p><p class="student-index">№8</p></div>
+        <div class="student-card"><p class="student-name">Шүкүрбек Арнұр</p><p class="student-index">№9</p></div>
+      </div>
+    </div>
+    <div class="group-section">
+      <div class="group-header">
+        <span class="group-badge">ВТиПО 25-11</span>
+        <h3 class="group-title">Группа 25-11</h3>
+        <span class="student-count">27 студентов</span>
+      </div>
+      <div class="students-grid">
+        <div class="student-card"><p class="student-name">Абдолда Жансұлтан</p><p class="student-index">№1</p></div>
+        <div class="student-card"><p class="student-name">Аймырза Шапағат</p><p class="student-index">№2</p></div>
+        <div class="student-card"><p class="student-name">Бақыт Ғани</p><p class="student-index">№3</p></div>
+        <div class="student-card"><p class="student-name">Бекзатқызы Ақбота</p><p class="student-index">№4</p></div>
+        <div class="student-card"><p class="student-name">Бекболатұлы Абылай</p><p class="student-index">№5</p></div>
+        <div class="student-card"><p class="student-name">Байдуллаев Нурбол</p><p class="student-index">№6</p></div>
+        <div class="student-card"><p class="student-name">Ердеш Нұрболат</p><p class="student-index">№7</p></div>
+        <div class="student-card"><p class="student-name">Жалғас Мөлдір</p><p class="student-index">№8</p></div>
+        <div class="student-card"><p class="student-name">Жалғасбай Айдана</p><p class="student-index">№9</p></div>
+        <div class="student-card"><p class="student-name">Искак Арнур</p><p class="student-index">№10</p></div>
+        <div class="student-card"><p class="student-name">Кахарман Аида</p><p class="student-index">№11</p></div>
+        <div class="student-card"><p class="student-name">Қуатбаев Рауан</p><p class="student-index">№12</p></div>
+        <div class="student-card"><p class="student-name">Малшібек Бақыткелді</p><p class="student-index">№13</p></div>
+        <div class="student-card"><p class="student-name">Мәлікұлы Даулет</p><p class="student-index">№14</p></div>
+        <div class="student-card"><p class="student-name">Мыңжасар Нурислам</p><p class="student-index">№15</p></div>
+        <div class="student-card"><p class="student-name">Мырзатайқызы Назым</p><p class="student-index">№16</p></div>
+        <div class="student-card"><p class="student-name">Назымбек Аружан</p><p class="student-index">№17</p></div>
+        <div class="student-card"><p class="student-name">Нұрланұлы Әділет</p><p class="student-index">№18</p></div>
+        <div class="student-card"><p class="student-name">Сағындық Расул</p><p class="student-index">№19</p></div>
+        <div class="student-card"><p class="student-name">Саттар Санжар</p><p class="student-index">№20</p></div>
+        <div class="student-card"><p class="student-name">Серғазы Альмира</p><p class="student-index">№21</p></div>
+        <div class="student-card"><p class="student-name">Серік Аманжол</p><p class="student-index">№22</p></div>
+        <div class="student-card"><p class="student-name">Тұрлыбек Аруна</p><p class="student-index">№23</p></div>
+        <div class="student-card"><p class="student-name">Тюртинбаев Дәулет</p><p class="student-index">№24</p></div>
+        <div class="student-card"><p class="student-name">Өмірбек Данияр</p><p class="student-index">№25</p></div>
+      </div>
+    </div>
+  </section>
+</main>
+<nav class="bottom-tabs" id="tabs" aria-label="Навигация">
+  <button class="tab" data-day="1" aria-selected="false">Пн</button>
+  <button class="tab" data-day="2" aria-selected="false">Вт</button>
+  <button class="tab" data-day="3" aria-selected="false">Ср</button>
+  <button class="tab" data-day="4" aria-selected="false">Чт</button>
+  <button class="tab" data-day="5" aria-selected="false">Пт</button>
+</nav>
+<div class="install-banner" id="installBanner">
+  <span>Добавить Timelya на главный экран?</span>
+  <button class="install-btn" id="installBtn">Установить</button>
+</div>
+<script>
+  const tabs = document.querySelectorAll('.tab');
+  const headerBtn = document.querySelector('.header-btn');
+  const panels = document.querySelectorAll('.day-panel, .students-panel');
+  function showPanel(panelId) {
+    tabs.forEach(t => {
+      const isActive = t.dataset.day === panelId;
+      t.classList.toggle('active', isActive);
+      t.setAttribute('aria-selected', isActive);
+    });
+    headerBtn.classList.toggle('active', panelId === 'students');
+    panels.forEach(p => {
+      const isActive = p.dataset.panel === panelId;
+      p.classList.toggle('active', isActive);
+      if (p.classList.contains('day-panel')) {
+        p.classList.toggle('is-today', isActive && Number(panelId) === (new Date().getDay() || 7));
+      }
+    });
+    const brand = document.querySelector('.brand p');
+    brand.textContent = panelId === 'students' ? 'Список' : 'Расписание';
+  }
+  const today = new Date().getDay() || 7;
+  showPanel(today <= 5 ? String(today) : '1');
+  tabs.forEach(t => {
+    t.addEventListener('click', () => showPanel(t.dataset.day));
+  });
+  headerBtn.addEventListener('click', () => showPanel('students'));
+
+  const searchInput = document.getElementById('searchInput');
+  const studentCards = document.querySelectorAll('.student-card');
+  
+  searchInput.addEventListener('input', (e) => {
+    const query = e.target.value.toLowerCase().trim();
+    
+    studentCards.forEach(card => {
+      const name = card.querySelector('.student-name').textContent.toLowerCase();
+      const matches = name.includes(query);
+      card.classList.toggle('hidden', !matches);
+    });
+
+    const groupSections = document.querySelectorAll('.group-section');
+    groupSections.forEach(section => {
+      const visibleCards = section.querySelectorAll('.student-card:not(.hidden)');
+      section.style.display = visibleCards.length > 0 ? 'block' : 'none';
+    });
+  });
+
+  let deferredPrompt;
+  const banner = document.getElementById('installBanner');
+  const btn = document.getElementById('installBtn');
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    banner.classList.add('show');
+  });
+  btn.addEventListener('click', async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    await deferredPrompt.userChoice;
+    banner.classList.remove('show');
+    deferredPrompt = null;
+  });
+
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js').then((registration) => {
+      registration.addEventListener('updatefound', () => {
+        const newWorker = registration.installing;
+        newWorker.addEventListener('statechange', () => {
+          if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+            if (confirm('Доступна новая версия! Обновить приложение?')) {
+              newWorker.postMessage({ type: 'SKIP_WAITING' });
+              window.location.reload();
+            }
+          }
+        });
+      });
+    }).catch(console.error);
+    
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      window.location.reload();
+    });
+  }
+</script>
+</body>
+</html>

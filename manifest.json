@@ -1,0 +1,17 @@
+{
+  "name": "Timelya",
+  "short_name": "Timelya",
+  "description": "Личное расписание занятий",
+  "start_url": ".",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0f0f1a",
+  "theme_color": "#0f0f1a",
+  "icons": [
+    {
+      "src": "logo.jpeg",
+      "sizes": "1254x1254",
+      "type": "image/jpeg"
+    }
+  ]
+}
